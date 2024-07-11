@@ -3,10 +3,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Sequelize, DataTypes } = require('sequelize');
 const db = require('./models');
-
 const app = express()
+const router = require('./router');
+
+
+
 
 //call middlewares
+app.use(router);
 app.use(cors());
 app.use(bodyParser.json());
 const User = db.User;
@@ -43,7 +47,6 @@ app.put('/users/:id', async (req, res) => {
   const {name, age, email} = req.body;
   await User.update({name, age, email}, { where: { id } });
   const updatedUser = await User.findByPk(id);
-  res.json(updatedUser);
   res.sendStatus(204);
 });
 

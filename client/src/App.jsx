@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
+import UserList from './UserList';
+import UserForm from './UserForm';
 
 function App() {
-  
-  let [users, setUsers] = useState([]);
+  const API_URL = 'http://localhost:3000/users';
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({ name: '', email: '', age: '' });
- 
-  useEffect(()=> {
-    fetchUsers()
+  const [isEditing, setIsEditing] = useState(false);
+  const [editUserId, setEditUserId] = useState(null);
+
+  useEffect(() => {
+    fetchUsers();
   }, []);
-  
+
   async function fetchUsers() {
-    const response = await axios.get('http://localhost:3000/users');
+    const response = await axios.get(API_URL);
     setUsers(response.data);
-    //  console.log(users)
   }
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -24,57 +27,38 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-      const response = await axios.post('http://localhost:3000/users', formData);
+
+    if (isEditing) {
+      await axios.put(`${API_URL}/${editUserId}`, formData);
+      fetchUsers();
+      setIsEditing(false);
+      setEditUserId(null);
+    } else {
+      const response = await axios.post(API_URL, formData);
       setUsers((prevUsers) => [...prevUsers, response.data]);
-      setFormData({ name: '', email: '', age: '' }); 
+    }
+    setFormData({ name: '', email: '', age: '' });
+  };
+
+  const handleDelete = async (id) => {
+    await axios.delete(`${API_URL}/${id}`);
+    setUsers(users.filter((user) => user.id !== id));
+  };
+
+  const handleEdit = (user) => {
+    setFormData({ name: user.name, email: user.email, age: user.age });
+    setIsEditing(true);
+    setEditUserId(user.id);
   };
 
   return (
-
     <>
       <h1>Users</h1>
-      <div className='show-users'>
-        {users.map(user => (
-          <div key={user.id}>
-            <h1>{user.name}</h1>
-            <h2>{user.email}</h2>
-            <h2>{user.age}</h2>
-          </div>
-        ))}
-      </div>
-      <h1>Create User</h1>
-      <div className='form-container'>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="number"
-            name="age"
-            placeholder="Age"
-            min="0"
-            value={formData.age}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit">Add User</button>
-        </form>
-      </div>
+      <UserList users={users} handleEdit={handleEdit} handleDelete={handleDelete} />
+      <h1>{isEditing ? 'Edit User' : 'Create User'}</h1>
+      <UserForm formData={formData} handleChange={handleChange} handleSubmit={handleSubmit} isEditing={isEditing} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
