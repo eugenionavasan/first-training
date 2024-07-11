@@ -1,7 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { Sequelize, DataTypes } = require('sequelize');
 const db = require('./models');
 const app = express()
 const router = require('./router');
@@ -13,7 +12,6 @@ const router = require('./router');
 app.use(router);
 app.use(cors());
 app.use(bodyParser.json());
-const User = db.User;
 
 
 

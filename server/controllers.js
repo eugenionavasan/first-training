@@ -1,3 +1,7 @@
+const db = require('./models');
+
+const User = db.User;
+
 async function getUsers(req, res) {
   const users = await User.findAll();
   res.json(users);
@@ -21,7 +25,7 @@ async function createUser (req, res) {
 
 //PUT USER
 
- async function editUser (req, res) {
+ async function editUser(req, res) {
   const id = req.params.id;
   const {name, age, email} = req.body;
   await User.update({name, age, email}, { where: { id } });
